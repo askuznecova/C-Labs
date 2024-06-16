@@ -1,1 +1,62 @@
+#include <iostream>
+#include <cmath>
+#include <cstdlib>
+#include <ctime>
 
+using namespace std;
+
+// Структура для хранения координат точки и параметров параболы
+struct ParabolaPoint {
+    double a, b, c; // Уравнение параболы: y = ax^2 + bx + c
+    double px, py;  // Координаты точки P(x, y)
+};
+
+// Функция для проверки принадлежности точки параболе
+bool isPointOnParabola(const ParabolaPoint& parabola, double x, double y) {
+    double y_expected = parabola.a * x * x + parabola.b * x + parabola.c;
+    return fabs(y - y_expected) < 1e-6; // Проверяем, что y примерно равен y_expected
+}
+
+// Функция для вычисления координаты фокуса параболы
+double findFocusX(const ParabolaPoint& parabola) {
+    return -parabola.b / (2 * parabola.a);
+}
+
+// Функция для вычисления расстояния от директрисы до фокуса параболы
+double findDistanceToDirectrix(const ParabolaPoint& parabola) {
+    return fabs(1 / (4 * parabola.a));
+}
+
+int main() {
+    // Инициализация генератора случайных чисел
+    srand(time(NULL));
+
+    // Генерируем случайные параметры параболы и координаты точки
+    ParabolaPoint parabola;
+    parabola.a = static_cast<double>(rand()) / RAND_MAX * 10 - 5; // a in [-5, 5]
+    parabola.b = static_cast<double>(rand()) / RAND_MAX * 10 - 5; // b in [-5, 5]
+    parabola.c = static_cast<double>(rand()) / RAND_MAX * 10 - 5; // c in [-5, 5]
+    parabola.px = static_cast<double>(rand()) / RAND_MAX * 20 - 10; // px in [-10, 10]
+    parabola.py = static_cast<double>(rand()) / RAND_MAX * 20 - 10; // py in [-10, 10]
+
+    // Выводим параметры параболы и координаты точки
+    cout << "Уравнение параболы: y = " << parabola.a << "x^2 + " << parabola.b << "x + " << parabola.c << endl;
+    cout << "Координаты точки P(" << parabola.px << ", " << parabola.py << ")" << endl;
+
+    // Проверяем принадлежность точки параболе
+    if (isPointOnParabola(parabola, parabola.px, parabola.py)) {
+        cout << "Точка P принадлежит параболе." << endl;
+    } else {
+        cout << "Точка P не принадлежит параболе." << endl;
+    }
+
+    // Находим координату фокуса параболы
+    double focusX = findFocusX(parabola);
+    cout << "Координата фокуса параболы: (" << focusX << ", " << (parabola.a * focusX * focusX + parabola.b * focusX + parabola.c) << ")" << endl;
+
+    // Находим расстояние от директрисы до фокуса параболы
+    double distanceToDirectrix = findDistanceToDirectrix(parabola);
+    cout << "Расстояние от директрисы до фокуса параболы: " << distanceToDirectrix << endl;
+
+    return 0;
+}
