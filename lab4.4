@@ -1,1 +1,55 @@
+#include <iostream>
+#include <vector>
 
+using namespace std;
+
+// Функция для решения системы методом прогонки
+vector<double> solveUsingTridiagonal(const vector<vector<double>>& A, const vector<double>& b) {
+    int n = b.size();
+    vector<double> alpha(n);
+    vector<double> beta(n);
+    vector<double> x(n);
+
+    // Инициализация коэффициентов прогонки
+    alpha[1] = -A[0][1] / A[0][0];
+    beta[1] = b[0] / A[0][0];
+
+    // Прямая прогонка
+    for (int i = 1; i < n - 1; ++i) {
+        double denom = A[i][i] + A[i][i-1] * alpha[i];
+        alpha[i+1] = -A[i][i+1] / denom;
+        beta[i+1] = (b[i] - A[i][i-1] * beta[i]) / denom;
+    }
+
+    // Обратная прогонка
+    x[n-1] = (b[n-1] - A[n-1][n-2] * beta[n-1]) / (A[n-1][n-1] + A[n-1][n-2] * alpha[n-1]);
+    for (int i = n - 2; i >= 0; --i) {
+        x[i] = alpha[i+1] * x[i+1] + beta[i+1];
+    }
+
+    return x;
+}
+
+int main() {
+    // Инициализация матрицы коэффициентов A и вектора правой части b
+    vector<vector<double>> A = {
+        {13, -5, 0, 0, 0},
+        {-4, 9, -5, 0, 0},
+        {0, -1, -12, -6, 0},
+        {0, 0, 6, 20, -5},
+        {0, 0, 0, 4, 5}
+    };
+
+    vector<double> b = {-66, -47, -43, -74, 14};
+
+    // Решение системы методом прогонки
+    vector<double> solution = solveUsingTridiagonal(A, b);
+
+    // Вывод результатов
+    cout << "Решение системы методом прогонки:" << endl;
+    for (size_t i = 0; i < solution.size(); ++i) {
+        cout << "x" << i + 1 << " = " << solution[i] << endl;
+    }
+
+    return 0;
+}
