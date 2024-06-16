@@ -1,1 +1,61 @@
+#include <iostream>
+#include <cmath>
 
+using namespace std;
+
+// Функция вычисления значения функции f(x) в точке x
+double func(double x1, double x2) {
+    return x1 + 2*x2 + 4*sqrt(1 + x1*x1 + x2*x2);
+}
+
+// Функция вычисления градиента функции f(x) в точке x
+void gradient(double x1, double x2, double& grad1, double& grad2) {
+    double denominator = sqrt(1 + x1*x1 + x2*x2);
+    grad1 = 1 + 4 * x1 / denominator;
+    grad2 = 2 + 4 * x2 / denominator;
+}
+
+// Функция для метода наискорейшего спуска
+void steepestDescent(double x1, double x2, double alpha, double epsilon, int max_iter) {
+    double grad1, grad2;
+    double prev_x1, prev_x2;
+    int iter = 0;
+
+    do {
+        prev_x1 = x1;
+        prev_x2 = x2;
+
+        // Вычисляем градиент
+        gradient(prev_x1, prev_x2, grad1, grad2);
+
+        // Выполняем шаг спуска
+        x1 = prev_x1 - alpha * grad1;
+        x2 = prev_x2 - alpha * grad2;
+
+        // Увеличиваем счетчик итераций
+        iter++;
+
+        // Вычисляем норму градиента для проверки условия останова
+        double gradient_norm = sqrt(grad1 * grad1 + grad2 * grad2);
+
+        // Выводим текущие значения на каждой итерации
+        cout << "Итерация " << iter << ": x1 = " << x1 << ", x2 = " << x2 << ", f(x) = " << func(x1, x2) << endl;
+
+    } while (iter < max_iter && sqrt(grad1 * grad1 + grad2 * grad2) > epsilon);
+
+    // Выводим результаты после окончания итераций
+    cout << "Минимум найден: x1 = " << x1 << ", x2 = " << x2 << ", f(x) = " << func(x1, x2) << endl;
+}
+
+int main() {
+    double initial_x1 = 1.0; // Начальная точка x1
+    double initial_x2 = 1.0; // Начальная точка x2
+    double alpha = 0.1; // Размер шага (learning rate)
+    double epsilon = 1e-6; // Заданная точность
+    int max_iter = 1000; // Максимальное количество итераций
+
+    // Вызываем метод наискорейшего спуска
+    steepestDescent(initial_x1, initial_x2, alpha, epsilon, max_iter);
+
+    return 0;
+}
