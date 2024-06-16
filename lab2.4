@@ -1,1 +1,111 @@
+#include <iostream>
+#include <cmath>
+#include <cstdlib>
+#include <ctime>
 
+using namespace std;
+
+// Структура для хранения параметров эллиптического цилиндра
+struct EllipticalCylinder {
+    double a, b, c; // Параметры уравнения эллипса в плоскости XY: x^2/a^2 + y^2/b^2 = 1
+    double h;       // Высота цилиндра по оси Z
+};
+
+// Структура для хранения параметров плоскости
+struct Plane {
+    double A, B, C, D; // Уравнение плоскости: Ax + By + Cz + D = 0
+};
+
+// Структура для хранения параметров прямой
+struct Line {
+    double x0, y0, z0; // Начальная точка прямой
+    double dx, dy, dz; // Направляющие косинусы прямой
+};
+
+// Структура для хранения координат точки
+struct Point {
+    double x, y, z; // Координаты точки
+};
+
+// Функция для проверки пересечения плоскости с эллиптическим цилиндром
+bool isPlaneIntersectingCylinder(const Plane& plane, const EllipticalCylinder& cylinder) {
+    // Проверяем пересечение плоскости с эллиптическим цилиндром
+    // Вычисляем расстояние от центра эллипса до плоскости
+    double distance = fabs(plane.A * 0 + plane.B * 0 + plane.C * cylinder.h + plane.D) / sqrt(plane.A * plane.A + plane.B * plane.B + plane.C * plane.C);
+    
+    // Если расстояние меньше радиуса эллипса в данной плоскости, то есть пересечение
+    return distance < sqrt(cylinder.a * cylinder.a + cylinder.b * cylinder.b);
+}
+
+// Функция для проверки принадлежности точки эллиптическому цилиндру
+bool isPointInsideCylinder(const Point& point, const EllipticalCylinder& cylinder) {
+    // Проверяем принадлежность точки эллиптическому цилиндру
+    // Проверяем, что точка лежит на эллипсе в плоскости XY и что её z-координата входит в интервал высоты цилиндра
+    double ellipse_check = point.x * point.x / (cylinder.a * cylinder.a) + point.y * point.y / (cylinder.b * cylinder.b);
+    return (ellipse_check <= 1.0) && (point.z >= 0) && (point.z <= cylinder.h);
+}
+
+// Функция для проверки пересечения прямой с эллиптическим цилиндром
+bool isLineIntersectingCylinder(const Line& line, const EllipticalCylinder& cylinder) {
+    // Проверяем пересечение прямой с эллиптическим цилиндром
+    // Преобразуем прямую в параметрическое уравнение и подставляем в уравнение цилиндра
+    double A = cylinder.a * cylinder.a * line.dx * line.dx + cylinder.b * cylinder.b * line.dy * line.dy;
+    double B = 2 * (cylinder.a * cylinder.a * line.x0 * line.dx + cylinder.b * cylinder.b * line.y0 * line.dy);
+    double C = cylinder.a * cylinder.a * line.x0 * line.x0 + cylinder.b * cylinder.b * line.y0 * line.y0 - cylinder.a * cylinder.a * cylinder.b * cylinder.b;
+    
+    double discriminant = B * B - 4 * A * C;
+    
+    if (discriminant < 0) {
+        // Нет пересечения, если дискриминант отрицателен
+        return false;
+    } else if (discriminant == 0) {
+        // Прямая касается цилиндра, если дискриминант равен нулю
+        double t = -B / (2 * A);
+        double z = line.z0 + t * line.dz;
+        return z >= 0 && z <= cylinder.h;
+    } else {
+        // Есть две точки пересечения, если дискриминант положителен
+        double t1 = (-B + sqrt(discriminant)) / (2 * A);
+        double t2 = (-B - sqrt(discriminant)) / (2 * A);
+        
+        double z1 = line.z0 + t1 * line.dz;
+        double z2 = line.z0 + t2 * line.dz;
+        
+        return (z1 >= 0 && z1 <= cylinder.h) || (z2 >= 0 && z2 <= cylinder.h);
+    }
+}
+
+int main() {
+    // Инициализация генератора случайных чисел
+    srand(time(NULL));
+
+    // Генерируем случайные параметры эллиптического цилиндра, плоскости, прямой и координаты точки
+    EllipticalCylinder cylinder;
+    cylinder.a = static_cast<double>(rand()) / RAND_MAX * 10 + 1; // a in [1, 11]
+    cylinder.b = static_cast<double>(rand()) / RAND_MAX * 10 + 1; // b in [1, 11]
+    cylinder.h = static_cast<double>(rand()) / RAND_MAX * 20 + 1; // h in [1, 21]
+    
+    Plane plane;
+    plane.A = static_cast<double>(rand()) / RAND_MAX * 10 - 5; // A in [-5, 5]
+    plane.B = static_cast<double>(rand()) / RAND_MAX * 10 - 5; // B in [-5, 5]
+    plane.C = static_cast<double>(rand()) / RAND_MAX * 10 - 5; // C in [-5, 5]
+    plane.D = static_cast<double>(rand()) / RAND_MAX * 10 - 5; // D in [-5, 5]
+
+    Line line;
+    line.x0 = static_cast<double>(rand()) / RAND_MAX * 20 - 10; // x0 in [-10, 10]
+    line.y0 = static_cast<double>(rand()) / RAND_MAX * 20 - 10; // y0 in [-10, 10]
+    line.z0 = static_cast<double>(rand()) / RAND_MAX * 20 - 10; // z0 in [-10, 10]
+    double length = sqrt(line.x0 * line.x0 + line.y0 * line.y0 + line.z0 * line.z0);
+    line.dx = line.x0 / length;
+    line.dy = line.y0 / length;
+    line.dz = line.z0 / length;
+
+    Point point;
+    point.x = static_cast<double>(rand()) / RAND_MAX * 20 - 10; // x in [-10, 10]
+    point.y = static_cast<double>(rand()) / RAND_MAX * 20 - 10; // y in [-10, 10]
+    point.z = static_cast<double>(rand()) / RAND_MAX * 20 - 10; // z in [-10, 10]
+
+    // Выводим параметры эллиптического цилиндра, плоскости, прямой и координаты точки
+    cout << "Параметры эллиптического цилиндра: a = " << cylinder.a << ", b = " << cylinder.b << ", h = " << cylinder.h << endl;
+    cout << "Уравнение плоскости: " << plane.A << "x + " << plane.B << "y + " << plane.C << "z + " << plane.D << " = 0" << endl;
+}
