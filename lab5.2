@@ -1,1 +1,53 @@
+#include <iostream>
+#include <cmath>
+#include <vector>
 
+using namespace std;
+
+// Функция для вычисления интерполяционного многочлена Лагранжа в точке x*
+double lagrangeInterpolation(double x, const vector<double>& x_vals, const vector<double>& y_vals) {
+    double result = 0.0;
+    for (size_t i = 0; i < x_vals.size(); ++i) {
+        double term = y_vals[i];
+        for (size_t j = 0; j < x_vals.size(); ++j) {
+            if (j != i) {
+                term *= (x - x_vals[j]) / (x_vals[i] - x_vals[j]);
+            }
+        }
+        result += term;
+    }
+    return result;
+}
+
+// Функция для вычисления значения функции y = sin(x)
+double func(double x) {
+    return sin(x);
+}
+
+int main() {
+    // Заданные точки xi = 0.1π, 0.2π, 0.3π, 0.4π
+    vector<double> x_vals = {0.1 * M_PI, 0.2 * M_PI, 0.3 * M_PI, 0.4 * M_PI};
+    vector<double> y_vals(4);
+
+    // Вычисление значений yi = sin(xi)
+    for (size_t i = 0; i < x_vals.size(); ++i) {
+        y_vals[i] = func(x_vals[i]);
+    }
+
+    // Вычисление интерполяционного многочлена Лагранжа в точке x* = 0.25π
+    double x_star = 0.25 * M_PI;
+    double interpolation_result = lagrangeInterpolation(x_star, x_vals, y_vals);
+
+    // Вычисление точного значения функции в точке x*
+    double exact_value = func(x_star);
+
+    // Вычисление погрешности интерполяции в точке x*
+    double error = fabs(exact_value - interpolation_result);
+
+    // Вывод результатов
+    cout << "Значение интерполяционного многочлена Лагранжа в точке x* = " << x_star << " равно: " << interpolation_result << endl;
+    cout << "Точное значение функции в точке x* = " << x_star << " равно: " << exact_value << endl;
+    cout << "Погрешность интерполяции в точке x* = " << x_star << " равна: " << error << endl;
+
+    return 0;
+}
